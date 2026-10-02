@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة ومحاكي مزاين الإبل والنواميس</title>
+    <style>
+        :root {
+            --primary: #8B4513;
+            --secondary: #D2B48C;
+            --accent: #DAA520;
+            --dark: #2C1810;
+            --light: #FDF5E6;
+            --card-bg: #FFFFFF;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            padding: 20px;
+            direction: rtl;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--dark));
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--accent);
+        }
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e0d0c0;
+        }
+        h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 5px;
+        }
+        .camels-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        @media(min-width: 600px) {
+            .camels-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .camel-input-group {
+            background: #faf6f0;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ebd7c5;
+        }
+        .camel-input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+        .camel-input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        .slider-group {
+            margin-top: 15px;
+        }
+        .slider-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .slider-group input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+        }
+        .slider-value {
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary);
+            margin-top: 5px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent), #b8860b);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(218,165,32,0.3);
+            transition: 0.3s;
+            text-align: center;
+        }
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        /* شاشة الانتظار */
+        #waiting-screen {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .spinner {
+            width: 70px;
+            height: 70px;
+            border: 7px solid #f3f3f3;
+            border-top: 7px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+            height: 15px;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--accent);
+            transition: width 0.1s linear;
+        }
+        /* شاشة النتائج */
+        #result-screen {
+            display: none;
+            text-align: center;
+        }
+        .result-box {
+            background: #fff8e8;
+            border: 2px dashed var(--accent);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .result-box h3 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        .score-details {
+            font-size: 1.1rem;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>حاسبة مزاين الإبل والنواميس</h1>
+        <p>ادخل مواصفات منقيتك (الـ 5 نياق) ودرجة التباعد لاختبار فرص الفوز والناموس</p>
+    </header>
+
+    <!-- قسم إدخال النياق -->
+    <div id="input-section">
+        <div class="card">
+            <h2>أسماء ونقاط جمال النياق (الخمس)</h2>
+            <div class="camels-grid" id="camels-inputs">
+                <!-- يتم توليد حقول الإدخال تلقائياً -->
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>مقياس تباعد وتجانس المنقية</h2>
+            <div class="slider-group">
+                <label for="spacing-slider">درجة التباعد (كلما قلّ التباعد وصارت المنقية متقاربة بلونها وشكلها، زادت قوة المنافسة):</label>
+                <input type="range" id="spacing-slider" min="1" max="100" value="80">
+                <div class="slider-value" id="spacing-val">80% (انسجام ممتاز)</div>
+            </div>
+        </div>
+
+        <button class="btn" onclick="startChampionship()">دخول البطولة وعرض النتائج</button>
+    </div>
+
+    <!-- قسم انتظار النتيجة -->
+    <div id="waiting-screen" class="card">
+        <div class="spinner"></div>
+        <h2>لجان التحكيم تفرز المشاركات...</h2>
+        <p>جارٍ فحص مواصفات المنقية، قياس التباعد، والمقارنة مع باقي المنافسين.</p>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <p id="status-text" style="font-weight: bold; color: var(--primary);">جاري الفرز (0%)...</p>
+    </div>
+
+    <!-- قسم النتيجة النهائية -->
+    <div id="result-screen">
+        <div class="card result-box">
+            <h3 id="result-title">مبروك الناموس!</h3>
+            <p class="score-details" id="total-score-text">مجموع النقاط النهائي: 0</p>
+            <p class="score-details" id="ranking-text">المركز: الأول</p>
+            <p id="result-message" style="margin-top: 15px; font-size: 1.1rem; color: #444;"></p>
+        </div>
+        <button class="btn" onclick="resetCalculator()">تعديل المنقية ومحاولة جديدة</button>
+    </div>
+</div>
+
+<script>
+    // إنشاء حقول الإدخال للخمس نياق افتراضياً
+    const camelsContainer = document.getElementById('camels-inputs');
+    for (let i = 1; i <= 5; i++) {
+        camelsContainer.innerHTML += `
+            <div class="camel-input-group">
+                <label>الناقة رقم ${i}</label>
+                <input type="text" id="camel-name-${i}" value="ناقة ${i}" placeholder="اسم أو وصف الناقة">
+                <label style="margin-top: 8px; font-size: 0.85rem; color: #666;">نقاط الجمال (من 100):</label>
+                <input type="number" id="camel-score-${i}" value="${Math.floor(Math.random() * 10) + 90}" min="50" max="100">
+            </div>
+        `;
+    }
+
+    // تحديث قيمة شريط التباعد بصرياً
+    const slider = document.getElementById('spacing-slider');
+    const sliderVal = document.getElementById('spacing-val');
+    slider.oninput = function() {
+        let text = "انسجام ممتاز ومتطابق";
+        if (this.value < 50) text = "تفاوت ملحوظ بين النياق";
+        else if (this.value < 75) text = "انسجام جيد";
+        sliderVal.innerHTML = `${this.value}% (${text})`;
+    }
+
+    function startChampionship() {
+        document.getElementById('input-section').style.display = 'none';
+        document.getElementById('waiting-screen').style.display = 'block';
+
+        let width = 0;
+        const progressBar = document.getElementById('progress-bar');
+        const statusText = document.getElementById('status-text');
+
+        let interval = setInterval(() => {
+            if (width >= 100) {
+                clearInterval(interval);
+                showResults();
+            } else {
+                width += 2;
+                progressBar.style.width = width + '%';
+                if(width < 40) statusText.innerText = `جاري فحص رؤوس النياق والمواصفات (${width}%)...`;
+                else if(width < 80) statusText.innerText = `حساب درجة التجانس والتباعد (${width}%)...`;
+                else statusText.innerText = `اعتماد النتائج النهائية (${width}%)...`;
+            }
+        }, 50); // تستغرق تقريباً 2.5 ثانية
+    }
+
+    function showResults() {
+        document.getElementById('waiting-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+
+        // حساب المجموع والتباعد
+        let totalScore = 0;
+        for (let i = 1; i <= 5; i++) {
+            totalScore += parseFloat(document.getElementById(`camel-score-${i}`).value) || 0;
+        }
+        let spacingValue = parseFloat(slider.value);
+
+        // المعادلة النهائية (متوسط الجمال + نسبة التباعد)
+        let finalRating = (totalScore / 5) * 0.7 + (spacingValue * 0.3);
+
+        document.getElementById('total-score-text').innerText = `المجموع الموزون للمنقيه: ${finalRating.toFixed(1)} / 100`;
+
+        let title = "";
+        let ranking = "";
+        let msg = "";
+
+        if (finalRating >= 90) {
+            title = "🏆 مبروك الناموس والمركز الأول! 🏆";
+            ranking = "المركز الأول (بيرق المزاين)";
+            msg = "منقيتك أبدعت في العرض، تباعدها وتجانسها خطف الأنظار واستحقت الناموس بجدارة.";
+        } else if (finalRating >= 80) {
+            title = "⭐ كففو! ضمن المتقدمين ⭐";
+            ranking = "المركز الثاني أو الثالث (منصة التتويج)";
+            msg = "أداء قوي جداً، لكن لو رفعت تجانس النياق أو عدلت وحدة منهم، كنت بتنافس على البيرق مباشرة.";
+        } else {
+            title = "💪 خيرها في غيرها";
+            ranking = "المراكز المتأخرة";
+            msg = "المنقية تحتاج إعادة نظر في تباعد الألوان والمواصفات لترتفع حظوظك في البطولات القادمة.";
+        }
+
+        document.getElementById('result-title').innerText = title;
+        document.getElementById('ranking-text').innerText = ranking;
+        document.getElementById('result-message').innerText = msg;
+    }
+
+    function resetCalculator() {
+        document.getElementById('result-screen').style.display = 'none';
+        document.getElementById('input-section').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
